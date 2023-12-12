@@ -46,7 +46,7 @@ fields = ['#', 'Name', 'Price']
 rows=[]
 
 i=1
-while 4>i:
+while True:
     response=""
     if i>1:
         try:
@@ -59,10 +59,12 @@ while 4>i:
     # print(response)
 
     soup = bs(response.text,"html.parser")
-    print(soup.find("h1").find("span").text)
-
     try:
-        
+        print(soup.find("h1").find("span").text)
+    except: 
+        break   
+    try:
+       
         for item in soup.find_all("div", {"class": "col-tile"}):
             id = item.find("span",{"class":"ty-control-group__item"}).text
             title= (item.find("a",{"class": "product-title"})).get('title')
