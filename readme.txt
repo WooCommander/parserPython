@@ -6,5 +6,5 @@ pip install requests
 pip install pandas
 
 pip install lxml
-install html5lib
+pip install html5lib
 uvicorn main:app --reload    // запуск сервера
