@@ -2,8 +2,8 @@ import requests
 from bs4 import BeautifulSoup as bs
 import os
 import csv
-#,"2873", "Kompjuternaja-mebel","bytovaya","ohrannye-sistemy","svet-i-jelektrika","uslugi","avtojelektronika","rashodnye-materialy","Подарочные сертификаты","Programmnoe-obespechenie" 
-razdel = ["Komplektujuschie","2873"]
+#"Komplektujuschie","2873", "Kompjuternaja-mebel","bytovaya","ohrannye-sistemy","svet-i-jelektrika","uslugi","avtojelektronika","rashodnye-materialy","Подарочные сертификаты","Programmnoe-obespechenie" 
+razdel = ["Komplektujuschie","2873", "Kompjuternaja-mebel","bytovaya","ohrannye-sistemy","svet-i-jelektrika","uslugi","avtojelektronika","rashodnye-materialy","Подарочные сертификаты","Programmnoe-obespechenie" ]
 # Python3 code here creating class
 class price_item:
     def __init__(self, id, category, name, price):
@@ -36,37 +36,38 @@ rows=[]
             #     sub_title=sub_category.find("span").text
             #     print(sub_title, sub_link )
 #
+pages=2
+category=""
 print("Парсинг начат ...")
 for cat in razdel:
     url = base_url+cat+"/"
     i=1
     while  True:
         response=""
-        
-        if i>1 :
+        if  pages<i:
+            break
+        if i>1  :
             try:
                 test_url = url+"?PAGEN_1="+str(i)
-                print(test_url)
+                print("Обрабатывается страница: ",test_url)
                 response = requests.get(test_url) #?PAGEN_1=2
+                soup = bs(response.text,"html.parser")
             except:
                 break    
         else:
             response = requests.get(url)
             soup = bs(response.text,"html.parser")
+            pages = int(soup.find("div",{"class":"module-pagination"}).find_all("a", {"class":"dark_link"})[-1].text)
+            # print(pages)
+            try:
+                category= soup.find("h1").text
+                print("Категория:", category, " Cтраниц:", pages)
+            except: 
+                print("Все просмотрели")
+                break   
+                # print(response)
 
-
-        # print(response)
-
-        soup = bs(response.text,"html.parser")
-        category=""
-        try:
-            category= soup.find("h1").text
-            print("Категория:", category)
-        except: 
-            print("Все просмотрели")
-            break   
-        try:
-                       
+        try:      
             for item in soup.find_all("div", {"class": "catalog-block-view__item"}):
                 id_element = item.find("div",{"class":"article_block"})
                 title_element = (item.find("a",{"class": "js-notice-block__title"}))
@@ -84,10 +85,11 @@ for cat in razdel:
             i = i+1
         except:
             print("Ошибка поиска карточки")
-    # print(rows)
-
+print("Парсинг завершен.")
+print("Начато сохранение")
 with open('data_tiraet.csv', 'w',) as csvfile:
     writer = csv.writer(csvfile)
     writer.writerow(fields)
     for el in rows:
         writer.writerow([el.id,el.category, el.name, el.price])
+print("Сохранение завершено, спасибо за работу.")
