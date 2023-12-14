@@ -2,8 +2,8 @@ import requests
 from bs4 import BeautifulSoup as bs
 import os
 import csv
-
-razdel = ["televizory-i-elektronika","bytovaya-tehnika", "kompyuternaya-tehnika","mebel-tekstil","odezhda-i-aksessuary","tovary-dlya-doma","instrumenty-i-oborudovanie","sport-i-otdyh" ]
+#,"2873", "Kompjuternaja-mebel","bytovaya","ohrannye-sistemy","svet-i-jelektrika","uslugi","avtojelektronika","rashodnye-materialy","Подарочные сертификаты","Programmnoe-obespechenie" 
+razdel = ["Komplektujuschie","2873"]
 # Python3 code here creating class
 class price_item:
     def __init__(self, id, category, name, price):
@@ -13,11 +13,11 @@ class price_item:
         self.price = price
        
 os.system('cls')
-base_url= "https://hi-tech.md/"
+base_url= "https://tiraet.com/catalog/"
 # ['https://hi-tech.md/kompyuternaya-tehnika/page-2/']
 
 # field names 
-fields = ['#', 'Name', 'Price'] 
+fields = ['#', 'catalog', 'Name', 'Price'] 
 rows=[]
 
 
@@ -36,16 +36,18 @@ rows=[]
             #     sub_title=sub_category.find("span").text
             #     print(sub_title, sub_link )
 #
-
+print("Парсинг начат ...")
 for cat in razdel:
     url = base_url+cat+"/"
     i=1
-    while True:
+    while  True:
         response=""
         
-        if i>1:
+        if i>1 :
             try:
-                response = requests.get(url+"page-"+str(i))
+                test_url = url+"?PAGEN_1="+str(i)
+                print(test_url)
+                response = requests.get(test_url) #?PAGEN_1=2
             except:
                 break    
         else:
@@ -58,25 +60,33 @@ for cat in razdel:
         soup = bs(response.text,"html.parser")
         category=""
         try:
-            category= soup.find("h1").find("span").text
-            print(category)
+            category= soup.find("h1").text
+            print("Категория:", category)
         except: 
             print("Все просмотрели")
             break   
         try:
                        
-            for item in soup.find_all("div", {"class": "col-tile"}):
-                id = item.find("span",{"class":"ty-control-group__item"}).text
-                title= (item.find("a",{"class": "product-title"})).get('title')
-                price= item.find("span",{"class": "ty-price-num"}).text
+            for item in soup.find_all("div", {"class": "catalog-block-view__item"}):
+                id_element = item.find("div",{"class":"article_block"})
+                title_element = (item.find("a",{"class": "js-notice-block__title"}))
+                price_element = item.find("span",{"class": "price_value"})
+                
+                id = id_element.get('data-value') if id_element else " non"
+                title = title_element.text if title_element else "no title"
+                price= price_element.text if price_element else "0"
 
+                # print(id,category,title, price)
+                
                 # print (id,title, price)
+                
                 rows.append(price_item(id,category,title, price))
-        except:
             i = i+1
+        except:
+            print("Ошибка поиска карточки")
     # print(rows)
 
-with open('data.csv', 'w',) as csvfile:
+with open('data_tiraet.csv', 'w',) as csvfile:
     writer = csv.writer(csvfile)
     writer.writerow(fields)
     for el in rows:
