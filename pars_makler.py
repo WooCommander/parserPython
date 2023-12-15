@@ -4,8 +4,7 @@ import os
 import csv
 # "Komplektujuschie","2873", "Kompjuternaja-mebel","bytovaya","ohrannye-sistemy","svet-i-jelektrika","uslugi","avtojelektronika","rashodnye-materialy","Подарочные сертификаты","Programmnoe-obespechenie"
 # "Komplektujuschie", "2873", "Kompjuternaja-mebel", "bytovaya", "ohrannye-sistemy", "svet-i-jelektrika",          "uslugi", "avtojelektronika", "rashodnye-materialy",
-razdel = ["Komplektujuschie", "2873", "Kompjuternaja-mebel", "bytovaya", "ohrannye-sistemy", "svet-i-jelektrika",
-          "uslugi", "avtojelektronika", "rashodnye-materialy", "Подарочные сертификаты", "Programmnoe-obespechenie"]
+razdel = ["transport"]
 # Python3 code here creating class
 
 
@@ -18,8 +17,8 @@ class price_item:
 
 
 os.system('cls')
-base_url = "https://tiraet.com/catalog/"
-# ['https://hi-tech.md/kompyuternaya-tehnika/page-2/']
+base_url = "https://makler.md/ru/transnistria/"
+# https://makler.md/ru/transnistria/transport?page=302
 
 # field names
 fields = ['#', 'catalog', 'Name', 'Price']
@@ -49,11 +48,11 @@ for cat in razdel:
     i = 1
     while True:
         response = ""
-        if pages < i:
+        if 2 < i:
             break
         if i > 1:
             try:
-                test_url = url+"?PAGEN_1="+str(i)
+                test_url = url+"?page="+str(i)
                 print("Обрабатывается страница: ", test_url)
                 response = requests.get(test_url)  
                 soup = bs(response.text, "html.parser")
@@ -62,30 +61,38 @@ for cat in razdel:
         else:
             response = requests.get(url)
             soup = bs(response.text, "html.parser")
-            pagination = soup.find("div", {"class": "module-pagination"})
+            # pagination = soup.find("div", {"class": "module-pagination"})
 
-            pages = int(pagination.find_all(
-                "a", {"class": "dark_link"})[-1].text) if pagination else 1
+            # pages = int(pagination.find_all(
+            #     "a", {"class": "dark_link"})[-1].text) if pagination else 1
             # print(pages)
             try:
-                category = soup.find("h1").text
-                print("Категория:", category, " Cтраниц:", pages)
+                category = soup.find("div",id="contentWrapper").find_all("nav")[0].find_all("li", {"class":"pl"})[-1].get_text(separator=' ', strip=True)
+                print("Категория:", category)
             except:
                 print("Все просмотрели")
                 break
                 # print(response)
 
         try:
-            for item in soup.find_all("div", {"class": "catalog-block-view__item"}):
-                id_element = item.find("div", {"class": "article_block"})
+            items= soup.find("div",id="contentWrapper").find_all("article")
+            # print(items[0])
+            if not items: 
+                # если нет блока объявлений
+               break 
+            for item in items:
+                id_element = item.get("id")
+                # print(id_element)
                 title_element = (
-                    item.find("a", {"class": "js-notice-block__title"}))
-                price_element = item.find("span", {"class": "price_value"})
-
-                id = id_element.get('data-value') if id_element else " non"
-                title = title_element.text if title_element else "no title"
+                    item.find("div", {"class": "subfir"}))
+                # print(title_element)
+                # price_element = item.find('br', string='Цена:').find_next_sibling(text=True, strip=True)
+                price_element = item.find("span", {"class":"ls-detail_price"})
+                id = id_element
+                title = title_element.get_text(separator=' ', strip=True) if title_element else "no title"
+                # title = f'"{title}"'
                 price = price_element.text if price_element else "0"
-
+                print(id, title,price)
                 # print(id,category,title, price)
 
                 # print (id,title, price)
@@ -96,9 +103,10 @@ for cat in razdel:
             print("Ошибка поиска карточки")
 print("Парсинг завершен.")
 print("Начато сохранение")
-with open('data_tiraet.csv', 'w',) as csvfile:
-    writer = csv.writer(csvfile)
-    writer.writerow(fields)
+with open('data_makler.csv', 'w',newline='', encoding='utf-8') as csvfile:
+    csv_writer = csv.writer(csvfile, delimiter='^')
+
+    csv_writer.writerow(fields)
     for el in rows:
-        writer.writerow([el.id, el.category, el.name, el.price])
+        csv_writer.writerow([el.id, el.category, el.name, el.price])
 print("Сохранение завершено, спасибо за работу.")
