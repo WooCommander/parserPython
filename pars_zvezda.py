@@ -13,7 +13,7 @@ razdel = ["kamen-4082", "novogodnij-dekor-4092", "suxie-stroitelnye-smesi-i-gidr
 # Python3 code here creating class
 
 # модель записи таблицы
-class price_item:
+class price_item_model:
     def __init__(self, id_item: str, category: str, sub_category: str, name: str, price: str, current_date: str):
         self.id = id_item
         self.category = category
@@ -49,7 +49,7 @@ def get_catalogs(url_base):
         print("Ошибка получения списка какталогов")
 
 
-def save_to_csv(file_name, data_arr: [price_item]):
+def save_to_csv(file_name, data_arr: [price_item_model]):
     """
     Сохранение данных в файл csv
     :param file_name: имя файла
