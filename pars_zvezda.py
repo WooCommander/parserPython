@@ -3,6 +3,7 @@ from bs4 import BeautifulSoup as bs
 import os
 import csv
 import datetime
+from datetime import datetime
 
 # "Komplektujuschie","2873", "Kompjuternaja-mebel","bytovaya","ohrannye-sistemy","svet-i-jelektrika","uslugi","avtojelektronika","rashodnye-materialy","Подарочные сертификаты","Programmnoe-obespechenie"
 # "Komplektujuschie", "2873", "Kompjuternaja-mebel", "bytovaya", "ohrannye-sistemy", "svet-i-jelektrika",          "uslugi", "avtojelektronika", "rashodnye-materialy",
@@ -95,15 +96,15 @@ def main(base_url):
 
     razdel = get_catalogs(base_url + "/shop")
     # field names
-
+    
     rows = []
 
     pages = 2
     category = ""
-    current_date = now
+    current_date =  datetime.now()
     print("Парсинг начат ...")
     for cat in razdel:
-        url = base_url + cat + "/"
+        url = cat
         i = 1
         while True:
             response = ""
@@ -111,27 +112,30 @@ def main(base_url):
             #     break
             if i > 1:
                 try:
-                    test_url = url + "?page=" + str(i) + "&orderbyf=date&grid_mode=False"
-                    print("Обрабатывается страница: ", test_url)
-                    response = requests.get(test_url)
-                    soup = bs(response.text, "html.parser")
+                    test_url = url + "?page/" + str(i)
+
+                    
                 except:
                     break
             else:
-                print(url)
-                response = requests.get(url)
-                soup = bs(response.text, "html.parser")
+                test_url=url
+                
+            print("Обрабатывается страница: ", test_url)
+            response = requests.get(test_url)
+            soup = bs(response.text, "html.parser")
+          
 
-                try:
-                    category = soup.find("h3", {"class": "breadcrumb"}).find_all("span")[-1].text
-                    print("Категория:", category, " Cтраница:", i)
-                except:
-                    print("Все просмотрели")
-                    break
-                    # print(response)
+            try:
+                category = soup.find("h1", {"class": "page-title"}).text
+                print("Категория:", category, " Cтраница:", i)
+            except:
+                print("Все просмотрели")
+                break
+                # print(response)
 
             try:
                 items = soup.find_all("li", {"class": "product-small"})
+                print(items)
                 for item in items:
                     rows.append(get_row(item))
 
