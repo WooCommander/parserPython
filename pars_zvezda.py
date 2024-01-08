@@ -77,28 +77,29 @@ def get_row(item, category):
     id_element = item.find("a",class_= "add_to_cart_button")
     # print("id_element",id_element)
     id: str = id_element['data-product_id'] if id_element else " non"
-    print("id:", id)
+    # print("id:", id)
     
     title_element = (item.find("h2", class_="woocommerce-loop-product__title"))
     title: str = title_element.text if title_element else "no title"
-    print("title", title)
+    # print("title", title)
     
     price_element = item.find("bdi")
-    price: str = price_element.text if price_element else "0"
+    
+    price: str = price_element.text.replace("р.", "") if price_element else "0"
     print("price:",price)   
 
     # sub_category_element = item.find("p", {"class": "view-prod-category"})
-    # category = soup.find("h1", {"class": "page-title"}).text
-    # sub_category = sub_category_element.text if sub_category_element else "none"
+    # category = "category"
+    sub_category = category if category else "category"
 
-    
+    print("sub category",sub_category)
     
  
     
     current_date: str = datetime.now().strftime('%d.%m.%Y')
-    print("current_date1",current_date)
+    # print("current_date1",current_date)
     
-    res = price_item_model(id, "category", "category", title, price, current_date)
+    res = price_item_model(id, "category", sub_category, title, price, current_date)
     # print("res:",res)
     return res
 
