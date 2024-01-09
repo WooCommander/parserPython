@@ -5,11 +5,6 @@ import csv
 import datetime
 from datetime import datetime
 
-# "Komplektujuschie","2873", "Kompjuternaja-mebel","bytovaya","ohrannye-sistemy","svet-i-jelektrika","uslugi","avtojelektronika","rashodnye-materialy","Подарочные сертификаты","Programmnoe-obespechenie"
-# "Komplektujuschie", "2873", "Kompjuternaja-mebel", "bytovaya", "ohrannye-sistemy", "svet-i-jelektrika",          "uslugi", "avtojelektronika", "rashodnye-materialy",
-# razdel = ["kamen-4082", "novogodnij-dekor-4092", "suxie-stroitelnye-smesi-i-gidroizolyaciya-2263",
-#           "teploizolyaciya-i-shumoizolyaciya-3919"]
-
 
 # Python3 code here creating class
 
@@ -23,13 +18,18 @@ class price_item_model:
         self.price = price
         self.current_date = current_date
 
+class parse_const():
+    base_url="https://zvezda.md"
+    id_element=""
+    id=""
+    name_element=""
+    
 
-## catalogs_element
-def get_catalogs(url_base):
+def get_catalogs_url(url_base: str):
     """
-    Получение списка каталогов
-    :param url_base:
-    :return:
+    Получение массива с url каталогов
+    :param url_base: главная страница где есть список каталогов
+    :return: str[]
     """
     catalogs = []
     try:
@@ -49,13 +49,8 @@ def get_catalogs(url_base):
     except:
         print("Ошибка получения списка какталогов")
 
-class parse_const():
-    base_url="https://zvezda.md"
-    id_element=""
-    id=""
-    name_element=""
 
-def save_to_csv(file_name, data_arr: [price_item_model]):
+def save_to_csv(file_name, data_arr):
     """
     Сохранение данных в файл csv
     :param file_name: имя файла
@@ -108,6 +103,15 @@ def get_row(item, category,sub_category):
     # print("res:",res)
     return res
 
+def get_category_and_sub_category(url):
+    category_element=""
+    category= category_element if  category_element else ""
+    
+    
+    sub_category_element=""
+    sub_category=sub_category_element if sub_category_element else ""
+    
+    return {category:category , sub_category:sub_category}
 
 def main(base_url):
     """
@@ -163,6 +167,9 @@ def main(base_url):
                 
                 if(len(items)==0):
                     category=sub_category
+                
+
+                res_category_subcategory = get_category_and_sub_category(url)
                 
                 for item in items:
                     r= get_row(item,category,sub_category)
