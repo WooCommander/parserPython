@@ -49,6 +49,11 @@ def get_catalogs(url_base):
     except:
         print("Ошибка получения списка какталогов")
 
+class parse_const():
+    base_url="https://zvezda.md"
+    id_element=""
+    id=""
+    name_element=""
 
 def save_to_csv(file_name, data_arr: [price_item_model]):
     """
@@ -68,7 +73,7 @@ def save_to_csv(file_name, data_arr: [price_item_model]):
     print("Сохранение завершено, спасибо за работу.")
 
 
-def get_row(item, category):
+def get_row(item, category,sub_category):
     """
     Получение строки данных из html карточки товара
     :param item:
@@ -86,20 +91,20 @@ def get_row(item, category):
     price_element = item.find("bdi")
     
     price: str = price_element.text.replace("р.", "") if price_element else "0"
-    print("price:",price)   
+    # print("price:",price)   
 
     # sub_category_element = item.find("p", {"class": "view-prod-category"})
     # category = "category"
-    sub_category = category if category else "category"
+    # sub_category = category if category else "category"
 
-    print("sub category",sub_category)
+    # print("sub category",sub_category)
     
  
     
     current_date: str = datetime.now().strftime('%d.%m.%Y')
     # print("current_date1",current_date)
     
-    res = price_item_model(id, "category", sub_category, title, price, current_date)
+    res = price_item_model(id, category if category else "", sub_category if sub_category else "", title, price, current_date)
     # print("res:",res)
     return res
 
@@ -117,16 +122,14 @@ def main(base_url):
     
     rows = []
 
-    pages = 2
+    
     category = ""
-    current_date =  datetime.now()
+    sub_category=""
     count=0
     print("Парсинг начат ...")
     for cat in razdel:
-        print(len(razdel))
+        # print(len(razdel))
         count =count + 1
-        if count==4:
-            break
         url = cat
         i = 1
         while True:
@@ -136,8 +139,7 @@ def main(base_url):
             if i > 1:
                 try:
                     test_url = url + "page/" + str(i)
-
-                    
+                   
                 except:
                     break
             else:
@@ -147,10 +149,9 @@ def main(base_url):
             response = requests.get(test_url)
             soup = bs(response.text, "html.parser")
           
-
             try:
-                category = soup.find("h1", {"class": "page-title"}).text
-                print("Категория:", category, " Cтраница:", i)
+                sub_category = soup.find("h1", {"class": "page-title"}).text
+                # print("Категория:", category, " Cтраница:", i)
             except:
                 print("Все просмотрели")
                 break
@@ -159,11 +160,13 @@ def main(base_url):
             try:
                 items = soup.find_all("li", class_="type-product")
                 print("количество", len(items))
+                
+                if(len(items)==0):
+                    category=sub_category
+                
                 for item in items:
-                    r= get_row(item,category)
-                    # print("-----------------------------",item) 
+                    r= get_row(item,category,sub_category)
                     rows.append(r)
-                    # print("+")
 
                 if len(items) == 0:
                     break

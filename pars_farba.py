@@ -43,8 +43,6 @@ def get_catalogs(url_base):
     
     
     
-
-
 os.system('cls')
 base_url = "http://www.farba.md"
 # ['https://hi-tech.md/kompyuternaya-tehnika/page-2/']
