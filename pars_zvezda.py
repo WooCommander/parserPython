@@ -19,7 +19,8 @@ class price_item_model:
         self.current_date = current_date
 
 class parse_const():
-    base_url="https://zvezda.md"
+    base_url="https://zvezda.md/shop"
+    file="data_zvezda1.csv"
     id_element=""
     id=""
     name_element=""
@@ -49,6 +50,10 @@ def get_catalogs_url(url_base: str):
     except:
         print("Ошибка получения списка какталогов")
 
+def get_html_soup(url):
+    response = requests.get(url)
+    soup = bs(response.text, "html.parser")
+    return soup
 
 def save_to_csv(file_name, data_arr):
     """
@@ -67,6 +72,19 @@ def save_to_csv(file_name, data_arr):
             writer.writerow([el.id, el.category, el.sub_category, el.name, el.price, el.current_date])
     print("Сохранение завершено, спасибо за работу.")
 
+def get_category(soup):
+
+    category_element = soup.find("h1", {"class": "page-title"}).text
+    category= category_element if  category_element else ""
+    
+    return category
+
+def get_sub_category(soup):
+
+    sub_category_element = soup.find("h1", {"class": "page-title"}).text
+    sub_category=sub_category_element if sub_category_element else ""
+    
+    return sub_category
 
 def get_row(item, category,sub_category):
     """
@@ -103,16 +121,9 @@ def get_row(item, category,sub_category):
     # print("res:",res)
     return res
 
-def get_category_and_sub_category(url):
-    category_element=""
-    category= category_element if  category_element else ""
-    
-    
-    sub_category_element=""
-    sub_category=sub_category_element if sub_category_element else ""
-    
-    return {category:category , sub_category:sub_category}
 
+
+#----------------------------------------------------------------------------------------------------------------
 def main(base_url):
     """
     Основная программа
@@ -121,25 +132,25 @@ def main(base_url):
     """
     os.system('cls')
 
-    razdel = get_catalogs(base_url + "/shop")
-    # field names
+    catalogs = get_catalogs_url(base_url)
+
     
     rows = []
 
     
-    category = ""
-    sub_category=""
     count=0
     print("Парсинг начат ...")
-    for cat in razdel:
+    for cat in catalogs:
         # print(len(razdel))
+        soup=get_html_soup(cat)
+        category=  get_category(soup)
+        sub_category= get_sub_category(soup)
+        
         count =count + 1
         url = cat
         i = 1
         while True:
             response = ""
-            # if pages < i:
-            #     break
             if i > 1:
                 try:
                     test_url = url + "page/" + str(i)
@@ -154,14 +165,6 @@ def main(base_url):
             soup = bs(response.text, "html.parser")
           
             try:
-                sub_category = soup.find("h1", {"class": "page-title"}).text
-                # print("Категория:", category, " Cтраница:", i)
-            except:
-                print("Все просмотрели")
-                break
-                # print(response)
-
-            try:
                 items = soup.find_all("li", class_="type-product")
                 print("количество", len(items))
                 
@@ -169,7 +172,7 @@ def main(base_url):
                     category=sub_category
                 
 
-                res_category_subcategory = get_category_and_sub_category(url)
+            
                 
                 for item in items:
                     r= get_row(item,category,sub_category)
@@ -183,7 +186,7 @@ def main(base_url):
                 break
 
     # print(rows)
-    save_to_csv("data_zvezda.csv", rows)
+    save_to_csv("data_zvezda1.csv", rows)
 
 
 main(base_url="https://zvezda.md")
