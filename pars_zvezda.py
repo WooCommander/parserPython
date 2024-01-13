@@ -46,6 +46,7 @@ def get_catalogs_url(url_base: str):
             # print(catalog_text)
             catalogs.append(catalog_text)
             # print(catalog)
+        print("количество каталогов:", len(catalogs))
         return catalogs
     except:
         print("Ошибка получения списка какталогов")
@@ -122,6 +123,22 @@ def get_row(item, category,sub_category):
     return res
 
 
+def get_items(soup, tag_, class_):
+    """Получение массива товаров
+
+    Args:
+        soup (_type_): _description_
+        tag_ (_type_): _description_
+        class_ (_type_): _description_
+
+    Returns:
+        _type_: _description_
+    """
+    items=[]
+    items = soup.find_all(tag_, class_=class_)
+    print("количество:", len(items))
+    return items
+
 
 #----------------------------------------------------------------------------------------------------------------
 def main(base_url):
@@ -131,56 +148,40 @@ def main(base_url):
     :return:
     """
     os.system('cls')
-
     catalogs = get_catalogs_url(base_url)
-
-    
     rows = []
-
     
-    count=0
     print("Парсинг начат ...")
-    for cat in catalogs:
-        # print(len(razdel))
-        soup=get_html_soup(cat)
-        category=  get_category(soup)
-        sub_category= get_sub_category(soup)
-        
-        count =count + 1
-        url = cat
-        i = 1
+
+    for cat_url in catalogs:
+      
+        page_url = cat_url
+        page = 1
         while True:
-            response = ""
-            if i > 1:
+            
+            print("Обрабатывается страница: ", page_url)
+            if page > 1:
                 try:
-                    test_url = url + "page/" + str(i)
-                   
+                    page_url = cat_url + "page/" + str(page)
+                    soup = get_html_soup(page_url)   
                 except:
                     break
             else:
-                test_url=url
-                
-            print("Обрабатывается страница: ", test_url)
-            response = requests.get(test_url)
-            soup = bs(response.text, "html.parser")
-          
+                soup = get_html_soup(page_url)
+                category =  get_category(soup)
+                sub_category = get_sub_category(soup)
+                  
             try:
-                items = soup.find_all("li", class_="type-product")
-                print("количество", len(items))
-                
-                if(len(items)==0):
-                    category=sub_category
-                
-
-            
-                
-                for item in items:
-                    r= get_row(item,category,sub_category)
-                    rows.append(r)
-
+                items = get_items(soup,tag_="li", class_="type-product")
                 if len(items) == 0:
                     break
-                i = i + 1
+                                        
+                for item in items:
+                    row = get_row(item,category,sub_category)
+                    rows.append(row)
+
+
+                page +=1
             except:
                 print("Ошибка поиска карточки")
                 break
@@ -189,4 +190,4 @@ def main(base_url):
     save_to_csv("data_zvezda1.csv", rows)
 
 
-main(base_url="https://zvezda.md")
+main(base_url="https://zvezda.md/shop")
