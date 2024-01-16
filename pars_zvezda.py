@@ -28,18 +28,59 @@ class price_item_model:
 
 
 class WebElement:
-    def __init__(self, tag_: str, class_: str, text_: bool):
-        self.tag = tag_
-        self.class_name = class_
-        self.text = text_
+    def __init__(
+        self,
+        tag_: str,
+        class_: str,
+        attr_: str,
+        text_: bool = False,
+        value_: bool = False,
+        idx_: int = None,
+        all_: bool = False,
+    ):
+        self.tag_ = tag_
+        self.class_ = class_
+        self.text_ = text_
+        self.attr_ = attr_
+        self.all_ = all_
+        self.idx_ = idx_
+        self.value_ = value_
+
+
+class WebElements:
+    def __init__(self, elements_: [WebElement]):
+        self.elements_ = elements_
 
 
 class parse_const:
     base_url = "https://zvezda.md/shop"
     file = "data_zvezda1.csv"
-    id_element = WebElement(tag="a", class_="add_to_cart_button", text=True)
-    id = ""
-    name_element = ""
+    category_url = WebElement(tag_="li", class_="cat-item")
+    category_url = WebElement(tag_="a", attr_="href")
+
+    items_html = WebElement(tag_="li", class_="type-product", all_=True)
+
+    category_ = WebElements(
+        [
+            WebElement(tag_="p", class_="aux-breadcrumbs"),
+            WebElement(tag_="a", all_=True, idx_=-1, text_=True),
+        ]
+    )
+    sub_category_ = WebElement(tag_="h1", class_="page-title", text_=True)
+
+    id = WebElement(tag_="a", class_="add_to_cart_button", attr_="data-product_id")
+
+    title = WebElement(tag_="h2", class_="woocommerce-loop-product__title", text_=True)
+    price = WebElement(tag_="bdi", value_=True)
+
+
+def get_element(soup: bs, el: WebElement):
+    res = object
+    if el.all_:
+        if el.tag_:
+            res = soup.find_all(tag=el._tag, class_=el.class_)
+        else:
+            res = soup.find(tag=el._tag, class_=el.class_)
 
 
 def get_catalogs_url(url_base: str) -> array:
@@ -201,7 +242,7 @@ def main(base_url: str):
                 break
 
     # print(rows)
-    save_to_csv("data_zvezda1.csv", rows)
+    save_to_csv("data_zvezda2.csv", rows)
 
 
 main(base_url="https://zvezda.md/shop")
