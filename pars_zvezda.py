@@ -33,16 +33,16 @@ class WebElement:
         tag_: str,
         class_: str,
         attr_: str,
-        text_: bool = False,
+        get_text_: bool = False,
         value_: bool = False,
         idx_: int = None,
-        all_: bool = False,
+        as_list_: bool = False,
     ):
         self.tag_ = tag_
         self.class_ = class_
-        self.text_ = text_
+        self.get_text_ = get_text_
         self.attr_ = attr_
-        self.all_ = all_
+        self.as_list_ = as_list_
         self.idx_ = idx_
         self.value_ = value_
 
@@ -58,12 +58,12 @@ class parse_const:
     category_url = WebElement(tag_="li", class_="cat-item")
     category_url = WebElement(tag_="a", attr_="href")
 
-    items_html = WebElement(tag_="li", class_="type-product", all_=True)
+    items_html = WebElement(tag_="li", class_="type-product", as_list=True)
 
     category_ = WebElements(
         [
             WebElement(tag_="p", class_="aux-breadcrumbs"),
-            WebElement(tag_="a", all_=True, idx_=-1, text_=True),
+            WebElement(tag_="a", all_=True, idx_=-1, get_text_=True),
         ]
     )
     sub_category_ = WebElement(tag_="h1", class_="page-title", text_=True)
@@ -76,11 +76,27 @@ class parse_const:
 
 def get_element(soup: bs, el: WebElement):
     res = object
-    if el.all_:
-        if el.tag_:
-            res = soup.find_all(tag=el._tag, class_=el.class_)
+    
+    elements = soup.find_all(el.tag_, class_=el.class_, attrs={el.attribute: el.attribute_value} if el.attribute else None)
+    if elements:
+        if el.as_list_:
+            if el.idx_ is not None and 0 <= el.idx_ < len(elements):
+                [elements[el.idx_].get_text(strip=True) if el.get_text else elements[el.idx_].get(el.attribute, '')]
+            else:
+                return [element.get_text(strip=True) if el.get_text else element.get(el.attr_, '') for element in elements]
+        elif el.idx_ is not None and 0 <= el.idx_ < len(elements):
+                return elements[el.idx_].get_text(strip=True) if el.get_text_ else elements[el.idx_].get(el.attr_, '')
         else:
-            res = soup.find(tag=el._tag, class_=el.class_)
+                return elements[0].get_text(strip=True) if el.get_text_ else elements[0].get(el.attr_, '')
+    else:
+        return "Элемент не найден."
+    
+    
+    # if el.all_:
+    #     if el.tag_:
+    #         res = soup.find_all(tag=el._tag, class_=el.class_)
+    #     else:
+    #         res = soup.find(tag=el._tag, class_=el.class_)
 
 
 def get_catalogs_url(url_base: str) -> array:
