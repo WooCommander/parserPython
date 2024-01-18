@@ -1,31 +1,47 @@
 import requests
 from bs4 import BeautifulSoup
 
-def get_page_element(tag=None, class_=None, attribute=None, attribute_value=None, get_text=True, as_list=False, index=None, url=None):
+class WebElement:
+    def __init__(
+        self,
+        tag_: str,
+        class_: str,
+        attr_: str,
+        get_text_: bool = False,
+        value_: bool = False,
+        idx_: int = None,
+        as_list_: bool = False,
+        soup_: bs4
+    ):
+        self.tag = tag_
+        self.class_ = class_
+        self.get_text = get_text_
+        self.attr = attr_
+        self.as_list = as_list_
+        self.idx = idx_
+        self.value = value_
+        self.soup= soup_
+
+
+def get_page_element(params_list:list WebElement ):
     try:
-        # Получаем содержимое страницы
-        response = requests.get(url)
-        response.raise_for_status()
+        for params in params_list:
+            # Ищем элемент в соответствии с переданными параметрами
+            elements = params.soup.find_all(params.tag, class_=params.class_, attrs={params.atribute: params.attribute_value} if params.attribute else None)
 
-        # Создаем объект BeautifulSoup для парсинга HTML
-        soup = BeautifulSoup(response.text, 'html.parser')
-
-        # Ищем элемент в соответствии с переданными параметрами
-        elements = soup.find_all(tag, class_=class_, attrs={attribute: attribute_value} if attribute else None)
-
-        # Возвращаем результат в виде массива или одиночного значения
-        if elements:
-            if as_list:
-                if index is not None and 0 <= index < len(elements):
-                    return [elements[index].get_text(strip=True) if get_text else elements[index].get(attribute, '')]
+            # Возвращаем результат в виде массива или одиночного значения
+            if elements:
+                if params.as_list or params.idx!=None:
+                    if params.idx is not None and 0 <= params.idx < len(elements):
+                        return [elements[params.idx].get_text(strip=True) if params.get_text else elements[params.idx].get(params.attribute, '')]
+                    else:
+                        return [element.get_text(strip=True) if params.get_text else element.get(params.attribute, '') for element in elements]
+                elif params.idx is not None and 0 <= params.idx < len(elements):
+                    return elements[params.idx].get_text(strip=True) if params.get_text else elements[params.idx].get(params.attribute, '')
                 else:
-                    return [element.get_text(strip=True) if get_text else element.get(attribute, '') for element in elements]
-            elif index is not None and 0 <= index < len(elements):
-                return elements[index].get_text(strip=True) if get_text else elements[index].get(attribute, '')
+                    return elements[0].get_text(strip=True) if params.get_text else elements[0].get(params.attribute, '')
             else:
-                return elements[0].get_text(strip=True) if get_text else elements[0].get(attribute, '')
-        else:
-            return "Элемент не найден."
+                return "Элемент не найден."
 
     except Exception as e:
         return f"Произошла ошибка: {str(e)}"
@@ -36,7 +52,6 @@ outer_params = {
     'class_': 'outer-container',
     'attribute': 'class',
     'attribute_value': 'outer-container',
-    'url': 'https://example.com/outer-page'
 }
 
 inner_params = {
@@ -52,6 +67,11 @@ inner_page_params = {
     'attribute_value': 'content'
 }
 
+inner_page_params1 = {
+    'tag': 'span',
+    'index':-2
+
+}
 # Получаем URL внутренней страницы из внешнего элемента
 inner_page_url = get_page_element(**outer_params, **inner_params)
 
@@ -62,3 +82,4 @@ if inner_page_url:
     print(f"Текст элементов на внутренней странице: {result_inner}")
 else:
     print("Внутренний URL не найден.")
+    

@@ -90,17 +90,23 @@ for cat in razdel:
 
             for item in items:
 
-                id_element = item.find("div", {"class": "quick-view"})
+               
 
-                title_element = (
-                    item.find("p", {"class": "view-prod-name"}))
-
+              
                 price_element = item.find("span", {"class": "woocommerce-Price-amount"})
+                price = price_element.text if price_element else "0"
+                
                 sub_category_element =  item.find("p",{"class":"view-prod-category"})
                 sub_category =  sub_category_element.text if sub_category_element else "none"
+                
+                id_element = item.find("div", {"class": "quick-view"})
                 id = id_element.get('data-prod') if id_element else " non"
+                
+                title_element = (
+                    item.find("p", {"class": "view-prod-name"}))
                 title = title_element.get_text(separator=' ', strip=True) if title_element else "no title"
-                price = price_element.text if price_element else "0"
+
+                
 
                 print(id, category, sub_category, title, price, current_date)
 
