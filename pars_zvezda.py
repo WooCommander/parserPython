@@ -28,60 +28,76 @@ class price_item_model:
 
 
 class WebElement:
+
     def __init__(
         self,
-        tag: str = None,
-        class_: str = None,
-        attribute: str = None,
-        attribute_value: str = None,
-        get_text: bool = False,
-        idx: int = None,
-        as_list: bool = False,
-        soup: bs = None
+        tag: str=None,
+        class_: str=None,
+        attr: str=None,
+        attr_value: str=None,
+        get_text: bool=False,
+        idx: int=None,
+        as_list: bool=False,
+        soup: bs=None
     ):
         self.tag = tag
         self.class_ = class_
         self.get_text = get_text
-        self.attribute = attribute
-        self.attribute_value = attribute_value
+        self.attribute = attr
+        self.attribute_value = attr_value
         self.idx = idx
         self.as_list = as_list
         self.soup = soup
 
+
 class WebElements:
+
     def __init__(self, elements_: [WebElement]):
         self.elements_ = elements_
 
 
-# class parse_const:
-#     base_url = "https://zvezda.md/shop"
-#     file = "data_zvezda1.csv"
-#     category_url = WebElement(tag_="li", class_="cat-item")
-#     category_url = WebElement(tag_="a", attr_="href")
+class parse_const:
 
-#     items_html = WebElement(tag_="li", class_="type-product", as_list=True)
-
-#     category_ = WebElements(
-#         [
-#             WebElement(tag_="p", class_="aux-breadcrumbs"),
-#             WebElement(tag_="a", all_=True, idx_=-1, get_text_=True),
-#         ]
-#     )
-#     sub_category_ = WebElement(tag_="h1", class_="page-title", text_=True)
-
-#     id = WebElement(tag_="a", class_="add_to_cart_button", attr_="data-product_id")
-
-#     title = WebElement(tag_="h2", class_="woocommerce-loop-product__title", text_=True)
-#     price = WebElement(tag_="bdi", value_=True)
-
+    def __init__(
+        self,
+        base_url:str=None,
+        file:str=None,
+        category_url:[WebElement]=None,
+        items_html:[WebElement]=None,
+        category:[WebElement]=None,
+        sub_category:[WebElement]=None,
+        id:[WebElement]=None,
+        title:[WebElement]=None,
+        price:[WebElement]=None,
+    ):
+        self.base_url = base_url
+        self.file = file
+        self.categories_url = category_url
+        self.items_html = items_html
+        self.category = category
+        self.sub_category = sub_category
+        self.id = id
+        self.title = title
+        self.price = price
+        
+    base_url = "https://zvezda.md/shop"
+    file = "data_zvezda1.csv"
+    categories_url = [WebElement(tag="li", class_="cat-item"), WebElement(tag="a", attr="href")]
+    items_html = [WebElement(tag="li", class_="type-product", as_list=True)]
+    category = [WebElement(tag="p", class_="aux-breadcrumbs"), WebElement(tag="a", as_list=True, idx=-1, get_text=True), ]
+    sub_category = [WebElement(tag="h1", class_="page-title", get_text=True)]
+    id = [WebElement(tag="a", class_="add_to_cart_button", attr="data-product_id")]
+    title = [WebElement(tag="h2", class_="woocommerce-loop-product__title", get_text=True)]
+    price = [WebElement(tag="bdi")]
+    
 
 def get_page_element(elements: list[WebElement]):
     results = []
     len_el = len(elements)
-    soup:bs=None
+    soup:bs = None
     for element in elements:
-        if soup==None:
-            soup= element.soup
+        if soup == None:
+            soup = element.soup
         
         found_elements = soup.find_all(element.tag, class_=element.class_, attrs={element.attribute: element.attribute_value} if element.attribute else None)
         # print("found_elements",found_elements)
@@ -92,20 +108,18 @@ def get_page_element(elements: list[WebElement]):
         if element.idx is not None and 0 <= element.idx < len(found_elements):
             target_elements = found_elements[element.idx]
             # print("target_elements",target_elements)
-            if  len_el>0:
-                soup=target_elements 
+            if  len_el > 0:
+                soup = target_elements 
                 continue
             return target_elements 
         else:
             target_elements = found_elements
-            if element.as_list and element.idx==None:
+            if element.as_list and element.idx == None:
                 return target_elements
             
         for item in target_elements:
             result = item.get_text(strip=True) if element.get_text else item.get(element.attribute, '')
             results.append(result)
-
-
 
     return results if element.as_list else results[0] if results else None
 
@@ -271,8 +285,8 @@ def main(base_url: str):
     # print(rows)
     save_to_csv("data_zvezda2.csv", rows)
 
-
 # main(base_url="https://zvezda.md/shop")
+
 
 # Пример использования
 response = requests.get('https://zvezda.md/product-category/baguettes-and-ceiling-tiles/%d0%bf%d0%be%d1%82%d0%be%d0%bb%d0%be%d1%87%d0%bd%d1%8b%d0%b5-%d0%b1%d0%b0%d0%b3%d0%b5%d1%82%d1%8b/')
@@ -304,8 +318,11 @@ item = WebElement(
     soup=soup
 )
 
-result = get_page_element([item, name ])
-print(f"Результаты: {result}")
+# result = get_page_element([item, name ])
+# print(f"Результаты: {result}")
 
-result = get_page_element([item, price ])
-print(f"Результаты: {result}")
+# result = get_page_element([item, price ])
+# print(f"Результаты: {result}")
+# x= parse_const()
+# result = get_page_element([x.category ])
+# print(f"Результаты: {result}")
