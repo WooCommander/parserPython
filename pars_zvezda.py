@@ -90,7 +90,7 @@ class parse_const:
         ]
         self.category = [
             WebElement(tag="p", class_="aux-breadcrumbs", soup=soup),
-            WebElement(tag="a", as_list=True, idx=-1, get_text=True),
+            WebElement(tag="a", idx=-1, get_text=True),
         ]
         self.sub_category = [
             WebElement(tag="h1", class_="page-title", get_text=True, soup=soup)
@@ -149,7 +149,10 @@ def get_page_element(elements: list[WebElement], soup:bs=None):
                         
                         
                     if len(new_result)>1:
-                        new_results=new_result
+                        if element.idx!=None and len(new_result)>=element.idx:
+                            new_results=new_result[element.idx]
+                        else:
+                            new_results=new_result
                 else:
                     if element.attribute_value:
                         new_results.append(new_result[0].get(element.attribute, ''))
@@ -403,9 +406,15 @@ x = parse_const(soup=soup)
 
 
 # print("target_elements",x.categories_url)
-result = get_page_element(x.categories_url)
+# result = get_page_element(x.categories_url)
+
+# result = get_page_element(x.items_html)
+result = get_page_element(x.category)
+
 
 # result = get_page_element(x.title)
 
 
 print(f"Результаты: {result}")
+
+
